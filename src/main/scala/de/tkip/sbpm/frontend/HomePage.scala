@@ -27,6 +27,7 @@ object HomePage {
 
   val component = ScalaComponent.builder[String]("HomePage").render
   { i =>
+    dom.console.info("LOADED 113")
     <.div(
       <.h1(s"SBPM Frondend Test Page"),
       <.br,

@@ -646,10 +646,10 @@ object SubjectViewPage {
     var predStateID: Int = -1
     var selectedStateType: String = "Action"
     val states = ListBuffer[StateGraph]()
+
     val storeStates: ListBuffer[State] = ProcessInstance.loadSubject(subjectID)
     val transitionList = ListBuffer[TransitionGraph]()
-    var startState: State = getStartState()
-    var currentState: State = getStartState()
+
 
     /*
     手动初始化
@@ -659,15 +659,19 @@ object SubjectViewPage {
     val state3 = new StateGraph(3, OuterX/2 - 150, 340, "A")
     val state4 = new StateGraph(4, OuterX/2 + 50, 340, "E")
     val tr1 = new TransitionGraph(1001,2, 1, SubToSubMessage(0, 1), state1.anchorBottom._1, state1.anchorBottom._2, state2.anchorTop._1, state2.anchorTop._2)
-    val tr2 = new TransitionGraph(2001,3, 2, SubToSubMessage(1, 1),state2.anchorLeft._1, state2.anchorLeft._2, state3.anchorTop._1, state3.anchorTop._2)
-    val tr3 = new TransitionGraph(2002,4, 2, SubToSubMessage(2, 1),state2.anchorRight._1, state2.anchorRight._2, state4.anchorTop._1, state4.anchorTop._2)
-    state1.addOutTransition(tr1)
+    val tr2 = new TransitionGraph(2001,3, 2, SubToSubMessage(1, 1), state2.anchorLeft._1, state2.anchorLeft._2, state3.anchorTop._1, state3.anchorTop._2)
+    val tr3 = new TransitionGraph(2002,4, 2, SubToSubMessage(2, 1), state2.anchorRight._1, state2.anchorRight._2, state4.anchorTop._1, state4.anchorTop._2)
+    val tr4 = new TransitionGraph(2003,1, 2, SubToSubMessage(2, 2), state2.anchorRight._1, state2.anchorRight._2, state1.anchorTop._1, state1.anchorTop._2)
+
     state1.isStartState = true
+    state1.addOutTransition(tr1)
     state2.addOutTransition(tr2)
     state2.addOutTransition(tr3)
+    state2.addOutTransition(tr4)
     state2.addInTransition(tr1)
     state3.addInTransition(tr2)
     state4.addInTransition(tr3)
+    state1.addInTransition(tr4)
     transitionList += tr1
     transitionList += tr2
     transitionList += tr3
@@ -677,10 +681,14 @@ object SubjectViewPage {
     storeStates += state4
     var stateType = "A"
 
+    var startState: State = getStartState()
+    var currentState: State = getStartState()
     storeStates.map(s => states += s.asInstanceOf[StateGraph])  //测试能否互相转换
     /*
     初始化结束
     */
+
+    dom.console.info("loaded Subject Page1")
     private var outerRef: html.Element = _
     def init: Callback =
       Callback(outerRef.focus())
@@ -818,7 +826,7 @@ object SubjectViewPage {
     def connState(e: ReactEventFromInput) = {
 
 //      states.head.xx -= 200
-//      LinerTimeLayout.identifyEdgeTypes(getStartState(), Map(), Map(), 0)
+      LinerTimeLayout.identifyEdgeTypes(getStartState(), Map(), Map(), 0)
       e.preventDefaultCB
     }
 
@@ -869,56 +877,145 @@ object SubjectViewPage {
 
 
 
-//    case object LinerTimeLayout {
-//
-//      trait EdgeType
-//      case object TreeEdge extends EdgeType
-//      case object BackEdge extends EdgeType
-//      case object ForwardEdge extends EdgeType
-//      case object CrossEdge extends EdgeType
-//
-//      val branchingSplit = ListBuffer[State]()
-//      val branchingjoin = ListBuffer[State]()
-//      val edgeType = Map[Int, EdgeType]()
-//      val backEdges = Set[Int]()
-//      val spacex: Int = 0
-//      val spacey: Int = 0
-//
-//
-//      def outEdges(node: State): Int = {
-//
-//        return node.outTransitions.length
+    case object LinerTimeLayout {
+
+      trait EdgeType
+      case object TreeEdge extends EdgeType
+      case object BackEdge extends EdgeType
+      case object ForwardEdge extends EdgeType
+      case object CrossEdge extends EdgeType
+
+      val branchingSplit = ListBuffer[State]()
+      val branchingjoin = ListBuffer[State]()
+      val edgeType = Map[Int, EdgeType]()
+      val length = Map[Int, Int]().withDefaultValue(0)
+      val parent = Map[Int, Int]() //key = son, value = parent
+      val branchHeight = Map[Int, Int]().withDefaultValue(0)
+      val branchWidth = Map[Int, Int]().withDefaultValue(0)
+      val virtualEdges: ListBuffer[Int] = new ListBuffer[Int]()
+      val backEdges = Set[Int]()
+      val spacex: Int = 0
+      val spacey: Int = 0
+
+
+      def outEdges(node: State): Int = {
+
+        return node.outTransitions.length
+      }
+
+      def inEdges(node: State): Int = {
+
+        return node.inTransitions.length
+      }
+
+      /*
+      确定反向边
+      */
+      def identifyEdgeTypes(n: State, discovered: Map[Int, Int], finished: Map[Int, Int], t: Int): Int = {
+        var nt = t + 1
+        discovered += n.stateid -> nt
+        for (tr <- n.outTransitions){
+          val next = storeStates.find(s => s.stateid == tr.targetid).get
+          if(!discovered.contains(next.stateid)){
+            edgeType += tr.transitionid -> TreeEdge
+            nt = identifyEdgeTypes(next, discovered, finished, nt)
+          }else if(!finished.contains(next.stateid)){
+            edgeType += tr.transitionid -> BackEdge
+          }else if(discovered(next.stateid) > discovered(n.stateid)){
+            edgeType += tr.transitionid -> ForwardEdge
+          }else{
+            edgeType += tr.transitionid -> CrossEdge
+          }
+        }
+        finished += n.stateid -> (nt + 1)
+        dom.console.info("edge types " + edgeType)
+        nt + 1
+      }
+
+      def topologicalSort(nodes: ListBuffer[State], n: State): ListBuffer[State] ={
+        val inEdges = Map[Int, Int]().withDefaultValue(0)
+        for(s <- nodes){
+          for(e <- s.outTransitions){
+            if(!edgeType(e.transitionid).equals(BackEdge)){
+              inEdges += e.targetid -> (inEdges.getOrElseUpdate(e.targetid, 0) + 1)
+            }
+          }
+        }
+        val topology = ListBuffer[State]()
+        var i = 0
+        topology(i) = n
+        while(i != nodes.length){
+          val nn = topology(i)
+          i += 1
+          for(e <- nn.outTransitions){
+            if(!edgeType(e.transitionid).equals(BackEdge)){
+              val t = storeStates.find(s => s.stateid == e.targetid).get
+              inEdges += t.stateid -> (inEdges(t.stateid) - 1)
+              if(inEdges(t.stateid) == 0){
+                topology(topology.length) = t
+              }
+            }
+          }
+        }
+        return topology
+      }
+
+      def LPSTree(topology: ListBuffer[State]): Unit ={
+        for(s <- topology){
+          for(e <- s.outTransitions){
+            if(!edgeType(e.transitionid).equals(BackEdge)){
+              val t = storeStates.find(s => s.stateid == e.targetid).get
+              if(length.getOrElseUpdate(t.stateid, 0) < length.getOrElseUpdate(s.stateid, 0) + spacey){
+                length(t.stateid) = length(s.stateid) + spacey
+                parent += (t.stateid) -> (s.stateid)
+              }
+            }
+          }
+        }
+      }
+
+      def computeBranchDimensions(n: State): Unit ={
+        var h, oh, w, ow,k = 0
+        for(e <- n.outTransitions){
+          if(parent(e.targetid) == n.stateid){
+            computeBranchDimensions(storeStates.find(s => s.stateid == e.targetid).get)
+            oh = branchHeight(e.targetid)
+            ow = branchWidth(e.targetid)
+          }else{
+            oh = 0
+            ow = 0
+          }
+          h = h + k*spacey + oh
+          w = math.max(w, ow)
+          k = 1
+        }
+//        h = math.max()
+      }
+
+//      def entryNode(fragment: ListBuffer[State]): State ={
+//      //return the entry
 //      }
 //
-//      def inEdges(node: State): Int = {
-//
-//        return node.inTransitions.length
+//      def exitNode(fragment: ListBuffer[State]): State ={
+//      //return the end
 //      }
-//
-//      /*
-//      确定反向边
-//      */
-//      def identifyEdgeTypes(n: State, discovered: Map[Int, Int], finished: Map[Int, Int], t: Int): Int = {
-//        var nt = t + 1
-//        discovered += n.stateid -> nt
-//        for (tr <- n.outTransitions){
-//          val next = storeStates.find(s => s.stateid == tr.targetid).get
-//          if(!discovered.contains(next.stateid)){
-//            edgeType += tr.transitionid -> TreeEdge
-//            nt = identifyEdgeTypes(next, discovered, finished, nt)
-//          }else if(!finished.contains(next.stateid)){
-//            edgeType += tr.transitionid -> BackEdge
-//          }else if(discovered(next.stateid) > discovered(n.stateid)){
-//            edgeType += tr.transitionid -> ForwardEdge
-//          }else{
-//            edgeType += tr.transitionid -> CrossEdge
-//          }
-//        }
-//        finished += n.stateid -> (nt + 1)
-//        dom.console.info("edge types " + edgeType)
-//        nt + 1
-//      }
-//    }
+
+      def fragments(): Unit ={
+      //todo...
+      }
+
+      def splitOffMutipleEdges(): Unit ={
+        /*
+        repalce the Mutiple Edges with single virtual edge
+        */
+        for (state <- states){
+          for(tr <- state.outTransitions){
+
+          }
+        }
+      }
+
+    }
   }
 
   val Main = ScalaComponent.builder[Unit]("states view")
