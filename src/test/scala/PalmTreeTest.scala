@@ -27,7 +27,7 @@ object PalmTreeTest extends App{
   var startPath = new ListBuffer[(Int, Int)]()
   var tStack = Stack[(Int, Vertex, Vertex)]()
   var eStack = Stack[Edge]()
-  val eos = (0, new Vertex, new Vertex)
+  val eos = (0, new Vertex(""), new Vertex(""))
   val graphc = new Graph
   var virtualEdgeList = new ListBuffer[VirtualEdge]
   var newTreeEdgeList = new ListBuffer[Edge]
@@ -36,94 +36,159 @@ object PalmTreeTest extends App{
     bucket(i) = new ListBuffer[(Vertex, Vertex)]()
   }
 
-  var v1 = new Vertex()
-  var v2 = new Vertex()
-  var v3 = new Vertex()
-  var v4 = new Vertex()
-  var v5 = new Vertex()
-  var v6 = new Vertex()
-  var v7 = new Vertex()
-  var v8 = new Vertex()
-  var v9 = new Vertex()
-  var v10 = new Vertex()
-  var v11 = new Vertex()
-  var v12 = new Vertex()
-  var v13 = new Vertex()
+  def createGraph(): Unit ={
+    var v1 = new Vertex("v1")
+    var v2 = new Vertex("v2")
+    var v3 = new Vertex("v3")
+    var v4 = new Vertex("v4")
+    var v5 = new Vertex("v5")
+    var v6 = new Vertex("v6")
+    var v7 = new Vertex("v7")
+    var v8 = new Vertex("v8")
+    var v9 = new Vertex("v9")
+    var v10 = new Vertex("v10")
+    var v11 = new Vertex("v11")
+    var v12 = new Vertex("v12")
+    var v13 = new Vertex("v13")
 
-  verticeslist += v1
-  verticeslist += v2
-  verticeslist += v3
-  verticeslist += v4
-  verticeslist += v5
-  verticeslist += v6
-  verticeslist += v7
-  verticeslist += v8
-  verticeslist += v9
-  verticeslist += v10
-  verticeslist += v11
-  verticeslist += v12
-  verticeslist += v13
+    verticeslist += v1
+    verticeslist += v2
+    verticeslist += v3
+    verticeslist += v4
+    verticeslist += v5
+    verticeslist += v6
+    verticeslist += v7
+    verticeslist += v8
+    verticeslist += v9
+    verticeslist += v10
+    verticeslist += v11
+    verticeslist += v12
+    verticeslist += v13
 
-  v1.transition += v2
-  v1.transition += v4
-  v1.transition += v8
-  v1.transition += v12
-  v1.transition += v13
+    v1.transition += v2
+    v1.transition += v4
+    v1.transition += v8
+    v1.transition += v12
+    v1.transition += v13
 
-  v2.transition += v1
-  v2.transition += v3
-  v2.transition += v13
+    v2.transition += v1
+    v2.transition += v3
+    v2.transition += v13
 
-  v3.transition += v2
-  v3.transition += v4
-  v3.transition += v13
+    v3.transition += v2
+    v3.transition += v4
+    v3.transition += v13
 
-  v4.transition += v1
-  v4.transition += v3
-  v4.transition += v5
-  v4.transition += v6
-  v4.transition += v7
+    v4.transition += v1
+    v4.transition += v3
+    v4.transition += v5
+    v4.transition += v6
+    v4.transition += v7
 
-  v5.transition += v4
-  v5.transition += v6
-  v5.transition += v7
-  v5.transition += v8
+    v5.transition += v4
+    v5.transition += v6
+    v5.transition += v7
+    v5.transition += v8
 
-  v6.transition += v4
-  v6.transition += v5
-  v6.transition += v7
+    v6.transition += v4
+    v6.transition += v5
+    v6.transition += v7
 
-  v7.transition += v4
-  v7.transition += v5
-  v7.transition += v6
+    v7.transition += v4
+    v7.transition += v5
+    v7.transition += v6
 
-  v8.transition += v1
-  v8.transition += v5
-  v8.transition += v9
-  v8.transition += v11
-  v8.transition += v12
+    v8.transition += v1
+    v8.transition += v5
+    v8.transition += v9
+    v8.transition += v11
+    v8.transition += v12
 
-  v9.transition += v8
-  v9.transition += v10
-  v9.transition += v11
-  v9.transition += v12
+    v9.transition += v8
+    v9.transition += v10
+    v9.transition += v11
+    v9.transition += v12
 
-  v10.transition += v9
-  v10.transition += v11
-  v10.transition += v12
+    v10.transition += v9
+    v10.transition += v11
+    v10.transition += v12
 
-  v11.transition += v8
-  v11.transition += v9
-  v11.transition += v10
+    v11.transition += v8
+    v11.transition += v9
+    v11.transition += v10
 
-  v12.transition += v1
-  v12.transition += v8
-  v12.transition += v9
-  v12.transition += v10
+    v12.transition += v1
+    v12.transition += v8
+    v12.transition += v9
+    v12.transition += v10
 
-  v13.transition += v1
-  v13.transition += v2
-  v13.transition += v3
+    v13.transition += v1
+    v13.transition += v2
+    v13.transition += v3
+  }
+
+  def createGraph2(): Unit ={
+    var s = new Vertex("s")
+    var v1 = new Vertex("v1")
+    var v2 = new Vertex("v2")
+    var v3 = new Vertex("v3")
+    var v4 = new Vertex("v4")
+    var v5 = new Vertex("v5")
+    var v6 = new Vertex("v6")
+    var v7 = new Vertex("v7")
+    var t = new Vertex("t")
+
+    verticeslist += s
+    verticeslist += v1
+    verticeslist += v2
+    verticeslist += v3
+    verticeslist += v4
+    verticeslist += v5
+    verticeslist += v6
+    verticeslist += v7
+    verticeslist += t
+
+    s.transition += v1
+    s.transition += v2
+    s.transition += t
+
+    v1.transition += s
+    v1.transition += v3
+    v1.transition += v4
+    v1.transition += v5
+
+    v2.transition += s
+    v2.transition += v3
+    v2.transition += v4
+    v2.transition += v5
+
+    v3.transition += v1
+    v3.transition += v2
+    v3.transition += v4
+
+    v4.transition += v1
+    v4.transition += v2
+    v4.transition += v3
+
+    v5.transition += v1
+    v5.transition += v2
+    v5.transition += v6
+    v5.transition += v7
+
+    v6.transition += v5
+    v6.transition += v7
+
+    v7.transition += v5
+    v7.transition += v6
+    v7.transition += t
+
+    t.transition += v7
+    t.transition += s
+
+//    eStack.push((s, t))
+
+  }
+
 
   case class Graph(){
     var vertices = new ListBuffer[Vertex]()
@@ -140,14 +205,17 @@ object PalmTreeTest extends App{
   }
 
 
-  case class Vertex(){
+  case class Vertex(n: String){
+    def uuid = java.util.UUID.randomUUID().hashCode()
+    val name = n
     var num, lowpt1, lowpt2, nd, father = 0
     var flag: Boolean = true
     var visited: Boolean = false
     var transition = new ListBuffer[Vertex]()
     var adjList = new ListBuffer[Vertex]()
-    var d = new ListBuffer[Vertex]()
+//    var d = new ListBuffer[Vertex]()
     var high = new ListBuffer[Int]()
+    var deg = 0
 
     def copy(v: Vertex): Unit ={
       num = v.num
@@ -160,10 +228,11 @@ object PalmTreeTest extends App{
       visited = v.visited
       transition = v.transition
       adjList = v.adjList
-      d = v.d
+//      d = v.d
+      deg = v.deg
     }
     def degree(): Int ={
-      return transition.length
+      return max(0,transition.length + deg)
     }
 
     def highv(): Int ={
@@ -197,6 +266,12 @@ object PalmTreeTest extends App{
     def removeHigh(vn: Int): Unit ={
       high -= vn
     }
+
+    override def equals(o: Any) = o match {
+      case that: Vertex => that.hashCode == this.hashCode
+      case _ => false
+    }
+    override def hashCode = uuid
     override def toString: String = {
       "num = " + num + " father = " + father + " nd = " + nd + " lowpt1 = " + lowpt1 + " lowpt2 = " + lowpt2
     }
@@ -213,10 +288,10 @@ object PalmTreeTest extends App{
         palmtree += ((v, w))
         v.nd += 1
         w.father = v.num
-        v.d += w
+//        v.d += w
         search1(w, v)
         v.nd += w.nd
-        v.d ++= w.d
+//        v.d ++= w.d
 
         if(v.lowpt1 > w.lowpt1){
           v.lowpt2 = min(v.lowpt1, w.lowpt2)
@@ -287,8 +362,8 @@ object PalmTreeTest extends App{
 
   def pathSearch(v: Vertex): Unit ={
     var h = 0
-    var a = new Vertex()
-    var b = new Vertex()
+    var a = new Vertex("a")
+    var b = new Vertex("b")
     v.visited = true
     for (w <- v.adjList){
       h = tStack.top._1
@@ -334,33 +409,33 @@ object PalmTreeTest extends App{
             var eab: Edge = null
             var ee: Edge = null
             if(wcopy.degree() == 2 && wcopy.firstChild() > wcopy.num){
-              println("debug type2...1... " + eStack.top._1.num + " -> " + eStack.top._2.num)
+              println("debug type2...1... " + getEstackxn() + " -> " + getEstackyn())
               var c = new Component
               c += newComponent(eStack.pop())
               val x = eStack.top._2
-              println("debug type2...1... " + eStack.top._1.num + " -> " + eStack.top._2.num)
+              println("debug type2...1... " + getEstackxn() + " -> " + getEstackyn())
               c += newComponent(eStack.pop())
               ee = ((v, x))
               newVirtualEdge(v, x, c)
-              if(eStack.top._1.num == v.num && eStack.top._2.num == b.num){
+              if(getEstackx() == v.num && getEstacky() == b.num){
                 eab = eStack.pop()
               }
             }else{
               tStack.pop()
               var c = new Component
-              var x = eStack.top._1.num
-              var y = eStack.top._2.num
+              var x = getEstackx()
+              var y = getEstacky()
               while((x <= h && x >= a.num) && (y <= h && y >= a.num)){
                 if(x == a.num && y == b.num){
-                  println("debug type2...2... " + eStack.top._1.num + " -> " + eStack.top._2.num)
+                  println("debug type2...2... " + getEstackxn() + " -> " + getEstackyn())
                   eab = eStack.pop()
-                  x = eStack.top._1.num
-                  y = eStack.top._2.num
+                  x = getEstackx()
+                  y = getEstacky()
                 }else{
-                  println("debug type2...3... " + eStack.top._1.num + " -> " + eStack.top._2.num)
+                  println("debug type2...3... " + getEstackxn() + " -> " + getEstackyn())
                   c += newComponent(eStack.pop())
-                  x = eStack.top._1.num
-                  y = eStack.top._2.num
+                  x = getEstackx()
+                  y = getEstacky()
                 }
               }
               ee = (a, b)
@@ -369,15 +444,15 @@ object PalmTreeTest extends App{
             if(eab != null){
               var c = new Component
               c += newComponent(eab)
-              println("debug type2...4... " + eab._1.num + " -> " + eab._2.num)
+              println("debug type2...4... " + eab._1.name + " -> " + eab._2.name)
               c += newComponent(((ee._1, ee._2)))
-              println("debug type2...4... " + ee._1.num + " -> " + ee._2.num)
+              println("debug type2...4... " + ee._1.name + " -> " + ee._2.name)
               ee = (v, b)
               newVirtualEdge(v, b, c)
             }
             eStack.push((ee._1, ee._2))
             makeTreeEdge((v, b))
-            println("type2 " + v.num + " -> " + b.num)
+            println("type2 " + v.name + " -> " + b.name)
             wcopy = b
           }
           h = tStack.top._1
@@ -393,43 +468,43 @@ object PalmTreeTest extends App{
         */
         var notvisited = false
         v.adjList.foreach(f => if(!f.visited) notvisited = true)
-        if(wcopy.lowpt2 >= v.num && wcopy.lowpt1 < v.num && (v.father != 1 || notvisited)){
+        if(w.lowpt2 >= v.num && w.lowpt1 < v.num && (v.father != 1 || notvisited)){
           var c = new Component
-          var x = eStack.top._1.num
-          var y = eStack.top._2.num
-          while ((x >= wcopy.num && x < wcopy.num + wcopy.nd) || (y >= wcopy.num && y < wcopy.num + wcopy.nd)){
-            println("debug type1...1... " + eStack.top._1.num + " -> " + eStack.top._2.num)
+          var x = getEstackx()
+          var y = getEstacky()
+          while ((x >= w.num && x <= w.num + w.nd) || (y >= w.num && y <= w.num + w.nd)){
+            println("debug type1...1... " + getEstackxn() + " -> " + getEstackyn())
             c += newComponent(eStack.pop())
-            x = eStack.top._1.num
-            y = eStack.top._2.num
+            x = getEstackx()
+            y = getEstacky()
           }
 
-          var lowpt1w = verticeslist.find(p => p.num == wcopy.lowpt1).get
+          var lowpt1w = verticeslist.find(p => p.num == w.lowpt1).get
           var ee: Edge = (v, lowpt1w)
           newVirtualEdge(v, lowpt1w, c)
 
-          if(x == v.num && y == wcopy.lowpt1){
+          if(x == v.num && y == w.lowpt1){
             var c = new Component
-            println("debug type1...2... " + eStack.top._1.num + " -> " + eStack.top._2.num)
+            println("debug type1...2... " + getEstackxn() + " -> " + getEstackyn())
             c += newComponent(eStack.pop())
-            println("debug type1...3... " + ee._1.num + " -> " + ee._2.num)
+            println("debug type1...3... " + ee._1.name + " -> " + ee._2.name)
             c += newComponent((ee._1, ee._2))
             ee = (v, lowpt1w)
             newVirtualEdge(v, lowpt1w, c)
           }
 
-          if(wcopy.lowpt1 != v.father){
+          if(w.lowpt1 != v.father){
             eStack.push((ee._1, ee._2))
             makeTreeEdge((lowpt1w, v))
-            println("type1.1 " + lowpt1w.num + " -> " + v.num)
+            println("type1.1 " + lowpt1w.name + " -> " + v.name)
           }else{
             var c = new Component
-            println("debug type1...4... " + lowpt1w.num + " -> " + v.num)
+            println("debug type1...4... " + lowpt1w.name + " -> " + v.name)
             c += newComponent((lowpt1w, v))
             ee = (lowpt1w, v)
             newVirtualEdge(lowpt1w, v, c)
             makeTreeEdge((lowpt1w, v))
-            println("type1.2 " + lowpt1w.num + " -> " + v.num)
+            println("type1.2 " + lowpt1w.name + " -> " + v.name)
           }
         }
 
@@ -437,7 +512,7 @@ object PalmTreeTest extends App{
         * type1 finished
         */
 
-        if (startPath.contains((v.num, wcopy.num))) {
+        if (startPath.contains((v.num, w.num))) {
           while (!tStack.top.equals(eos)) {
             tStack.pop()
           }
@@ -446,14 +521,14 @@ object PalmTreeTest extends App{
         h = tStack.top._1
         a = tStack.top._2
         b = tStack.top._3
-        while ((a.num != v.num) && (b.num != v.num) && (v.highv() > h)) {
+        while (!tStack.top.equals(eos) && ((a.num != v.num) && (b.num != v.num) && (v.highv() > h))) {
           tStack.pop()
           h = tStack.top._1
           a = tStack.top._2
           b = tStack.top._3
         }
       }else{
-        val e = (v, w)
+        val e = (w, v)
         if(startPath.contains((v.num, w.num))){
           var triDel = false
           var deltri = Stack[(Int, Vertex, Vertex)]()
@@ -474,14 +549,14 @@ object PalmTreeTest extends App{
         }
         if(w.num == v.father){
           var c = new Component
-          println("debug frond..." + e._1.num + " -> " + e._2.num)
+          println("debug frond..." + e._1.name + " -> " + e._2.name)
           c += newComponent(e)
-          println("debug frond..." + w.num + " -> " + v.num)
+          println("debug frond..." + w.name + " -> " + v.name)
           c += newComponent((w, v))
           val ee: Edge = (w, v)
           newVirtualEdge(w, v, c)
           makeTreeEdge(ee)
-          println("frond " + w.num + " -> " + v.num)
+          println("frond " + w.name + " -> " + v.name)
         }else{
           eStack.push(e)
         }
@@ -489,8 +564,40 @@ object PalmTreeTest extends App{
     }
   }
 
+  def getEstackx(): Int ={
+    if(eStack.isEmpty){
+      return 0
+    }else{
+      return eStack.top._1.num
+    }
+  }
+
+  def getEstackxn(): String ={
+    if(eStack.isEmpty){
+      return "empty"
+    }else{
+      return eStack.top._1.name
+    }
+  }
+
+  def getEstacky(): Int ={
+    if(eStack.isEmpty){
+      return 0
+    }else{
+      return eStack.top._2.num
+    }
+  }
+
+  def getEstackyn(): String ={
+    if(eStack.isEmpty){
+      return "empty"
+    }else{
+      return eStack.top._2.name
+    }
+  }
 
   def newComponent(e: Edge): Edge ={
+
     graphc.removeEdge(e)
     e._1.removeAdjacent(e._2)
     e._1.removeTransition(e._2)
@@ -502,9 +609,13 @@ object PalmTreeTest extends App{
 
 
   def newVirtualEdge(v: Vertex, w: Vertex, c: Component): Unit ={
+
+    w.father = v.num
     c += ((v,w))
     val e: VirtualEdge = (v, w, c)
     virtualEdgeList += e
+//    v.deg += 1
+//    w.deg += 1
     if(!v.transition.contains(w)){
       v.addTransition(w)
     }
@@ -550,29 +661,16 @@ object PalmTreeTest extends App{
     newTreeEdgeList += e
   }
 
-  var superroot = new Vertex
+  var superroot = new Vertex("superroot")
   superroot.num = -1
 
-
-
-
-
+  createGraph2
   search1(verticeslist.head, superroot)
   sort
-
-  println("--------adjlist----------")
-
-  verticeslist.foreach(f => {
-    println("v: " + f.num)
-    println(f.adjList.foreach(g => {
-      print(g.num + "   ")
-    }))
-    println
-  })
   startPath(verticeslist.head)
 
 
-    println("--------------------------------------")
+
 
 //    startPath.foreach(f => {
 //      print(f._1 + " -> " +   f._2)
@@ -587,6 +685,33 @@ object PalmTreeTest extends App{
   pathSearch(verticeslist.head)
 
 
+
+//  println("--------transions----------")
+//  verticeslist.foreach(f => {
+//    println("v: " + f.num)
+//    println(f.transition.foreach(g => {
+//      print(g.num + "   ")
+//    }))
+//    println
+//  })
+//  println("--------------------------------------")
+
+
+  println("--------components----------")
+  virtualEdgeList.foreach(f => {
+    println(s"v: ${f._1.name} -> w: ${f._2.name}")
+    println("componets:")
+    f._3.foreach(g => {
+      println(s"v: ${g._1.name} -> w: ${g._2.name}")
+    })
+    println("*************************")
+  })
+
+  println("--------EStack----------")
+  eStack.foreach(f => {
+    println(s"v: ${f._1.name} -> w: ${f._2.name}")
+  })
+  println("**********************************************")
 
 
 //  println(palmtree.foreach(f => println(f._1.num + "  " +f._2.num)))
