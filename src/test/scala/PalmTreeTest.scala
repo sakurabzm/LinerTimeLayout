@@ -7,6 +7,12 @@ object PalmTreeTest extends App{
   sealed trait TreeType
   case object Arc extends TreeType
   case object Frond extends TreeType
+
+  sealed  trait CompType
+  case object Bond extends CompType
+  case object Polygon extends CompType
+  case object Triconnected extends CompType
+
 //  case class Edge(v: Vertex, w: Vertex, tt: TreeType){
 //    var parent: Vertex = v
 //    var treeArc: Vertex = w
@@ -18,7 +24,8 @@ object PalmTreeTest extends App{
   //init
   type Edge = (Vertex, Vertex)
   type Component = ListBuffer[Edge]
-  type VirtualEdge = (Vertex, Vertex, Component)
+  type VirtualEdge = (Vertex, Vertex, Component, CompType)
+  val graphc = new Graph
   var length = 13
   lazy val root: Vertex = verticeslist.head
   var verticeslist = new ListBuffer[Vertex]()
@@ -28,9 +35,10 @@ object PalmTreeTest extends App{
   var tStack = Stack[(Int, Vertex, Vertex)]()
   var eStack = Stack[Edge]()
   val eos = (0, new Vertex(""), new Vertex(""))
-  val graphc = new Graph
   var virtualEdgeList = new ListBuffer[VirtualEdge]
   var newTreeEdgeList = new ListBuffer[Edge]
+  var triComponents = new ListBuffer[Component]
+
 
   for(i <- bucket.indices){
     bucket(i) = new ListBuffer[(Vertex, Vertex)]()
@@ -128,6 +136,7 @@ object PalmTreeTest extends App{
   }
 
   def createGraph2(): Unit ={
+
     var s = new Vertex("s")
     var v1 = new Vertex("v1")
     var v2 = new Vertex("v2")
@@ -148,9 +157,11 @@ object PalmTreeTest extends App{
     verticeslist += v7
     verticeslist += t
 
+
     s.transition += v1
     s.transition += v2
     s.transition += t
+
 
     v1.transition += s
     v1.transition += v3
@@ -186,6 +197,47 @@ object PalmTreeTest extends App{
     t.transition += s
 
 //    eStack.push((s, t))
+
+  }
+
+  def createGraph3(): Unit ={
+    var s = new Vertex("s")
+    var u = new Vertex("u")
+    var v = new Vertex("v")
+    var w = new Vertex("w")
+    var x = new Vertex("x")
+    var y = new Vertex("y")
+    var z = new Vertex("z")
+    var t = new Vertex("t")
+
+    verticeslist += s
+    verticeslist += u
+    verticeslist += v
+    verticeslist += w
+    verticeslist += x
+    verticeslist += y
+    verticeslist += z
+    verticeslist += t
+
+    s.transition += u
+    s.transition += t
+    u.transition += v
+    u.transition += w
+    v.transition += u
+    v.transition += w
+    v.transition += x
+    w.transition += u
+    w.transition += v
+    w.transition += x
+    x.transition += v
+    x.transition += w
+    x.transition += y
+    y.transition += x
+    y.transition += z
+    z.transition += y
+    z.transition += t
+    t.transition += z
+    t.transition += s
 
   }
 
@@ -612,8 +664,26 @@ object PalmTreeTest extends App{
 
     w.father = v.num
     c += ((v,w))
-    val e: VirtualEdge = (v, w, c)
+    var e: VirtualEdge = null
+    if(c.length > 3){
+      e = (v, w, c, Triconnected)
+    }else{
+      var vn = 0
+      var v1 = c.head._1.num
+      for(i <- c){
+        if(i._1.num == v1 || i._2.num == v1){
+          vn += 1
+        }
+      }
+      if(vn < 3){
+        e = (v, w, c, Polygon)
+      }else{
+        e = (v, w, c, Bond)
+      }
+    }
+
     virtualEdgeList += e
+
 //    v.deg += 1
 //    w.deg += 1
     if(!v.transition.contains(w)){
@@ -661,6 +731,39 @@ object PalmTreeTest extends App{
     newTreeEdgeList += e
   }
 
+  /*
+  * TODO. need to change to linear time
+  */
+  def buildTriComp(): Unit ={
+    var lastComponent = new Component
+    while(eStack.nonEmpty){
+      lastComponent += eStack.pop()
+    }
+
+
+    for(i <- virtualEdgeList.indices){
+      val vi = virtualEdgeList(i)
+      if(vi._3.nonEmpty){
+        if((vi._4.equals(Bond) || vi._4.equals(Polygon))){
+          for(e <- vi._3){
+            for(j <- i+1 to virtualEdgeList.length-1){
+              val vj = virtualEdgeList(j)
+              if(vj._3.contains(e) && vi._4.equals(vj._4)){
+                vi._3 ++= vj._3
+                var nv = vi._3.filterNot(p => p.equals(e))
+                vj._3.clear()
+                triComponents += nv
+              }
+            }
+          }
+        }else{
+          triComponents += vi._3
+        }
+      }
+    }
+    triComponents += lastComponent
+  }
+
   var superroot = new Vertex("superroot")
   superroot.num = -1
 
@@ -668,22 +771,10 @@ object PalmTreeTest extends App{
   search1(verticeslist.head, superroot)
   sort
   startPath(verticeslist.head)
-
-
-
-
-//    startPath.foreach(f => {
-//      print(f._1 + " -> " +   f._2)
-//      println()
-//    })
-//
-//    println("--------------------------------------")
-
-
   graphc.initGraph(verticeslist, palmtree)
   tStack.push(eos)
   pathSearch(verticeslist.head)
-
+  buildTriComp()
 
 
 //  println("--------transions----------")
@@ -697,19 +788,23 @@ object PalmTreeTest extends App{
 //  println("--------------------------------------")
 
 
-  println("--------components----------")
-  virtualEdgeList.foreach(f => {
-    println(s"v: ${f._1.name} -> w: ${f._2.name}")
+//  println("--------components----------")
+//  virtualEdgeList.foreach(f => {
+//    println(s"v: ${f._1.name} -> w: ${f._2.name}")
+//    println("componets:")
+//    f._3.foreach(g => {
+//      println(s"v: ${g._1.name} -> w: ${g._2.name}")
+//    })
+//    println("*************************")
+//  })
+
+  println("--------Tri Components----------")
+  triComponents.foreach(f => {
     println("componets:")
-    f._3.foreach(g => {
+    f.foreach(g => {
       println(s"v: ${g._1.name} -> w: ${g._2.name}")
     })
-    println("*************************")
-  })
-
-  println("--------EStack----------")
-  eStack.foreach(f => {
-    println(s"v: ${f._1.name} -> w: ${f._2.name}")
+    println("------------------------------------")
   })
   println("**********************************************")
 
