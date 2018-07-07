@@ -750,12 +750,13 @@ object PalmTreeTest extends App{
               val vj = virtualEdgeList(j)
               if(vj._3.contains(e) && vi._4.equals(vj._4)){
                 vi._3 ++= vj._3
-                var nv = vi._3.filterNot(p => p.equals(e))
+                vi._3 -= e
+                vi._3 -= e
                 vj._3.clear()
-                triComponents += nv
               }
             }
           }
+          triComponents += vi._3
         }else{
           triComponents += vi._3
         }
