@@ -13,6 +13,19 @@ object PalmTreeTest extends App{
   case object Polygon extends CompType
   case object Triconnected extends CompType
 
+  sealed trait Node
+  case class QNode() extends Node
+  case class SNode() extends Node
+  case class PNode() extends Node
+  case class RNode() extends Node
+
+  sealed trait Tree[+A]
+  case class Branch[A](children: ListBuffer[Tree[A]]) extends Tree[A]
+
+  case class ComponentsTreeArc(){
+    var children = new ListBuffer[ComponentsTreeArc]()
+    var treeArc = new ListBuffer[Component]()
+  }
 
   //init
   type Edge = (Vertex, Vertex)
@@ -214,17 +227,17 @@ object PalmTreeTest extends App{
     v7.transitions += v5
     v7.transitions += t
 
-    val c = new Component
-    c.edges += ((v5, v6))
-    c.edges += ((v5, v6))
-    c.edges += ((v5, v6))
-    virtualEdgeList += ((v5, v6, c, Bond))
-
-    val c2 = new Component
-    c2.edges += ((v5, v7))
-    c2.edges += ((v5, v7))
-    c2.edges += ((v5, v7))
-    virtualEdgeList += ((v5, v7, c2, Bond))
+    //    val c = new Component
+    //    c.edges += ((v5, v6))
+    //    c.edges += ((v5, v6))
+    //    c.edges += ((v5, v6))
+    //    virtualEdgeList += ((v5, v6, c, Bond))
+    //
+    //    val c2 = new Component
+    //    c2.edges += ((v5, v7))
+    //    c2.edges += ((v5, v7))
+    //    c2.edges += ((v5, v7))
+    //    virtualEdgeList += ((v5, v7, c2, Bond))
   }
 
   def createGraph3(): Unit ={
@@ -355,32 +368,6 @@ object PalmTreeTest extends App{
     }
   }
 
-  /*
-  * polygon
-  */
-  case class SNode(){
-
-  }
-
-  /*
-  * multi edges
-  */
-  case class PNode(){
-
-  }
-  /*
-  * single edge
-  */
-  case class QNode(){
-
-  }
-  /*
-  * tricomponent
-  */
-  case class RNode(){
-
-  }
-
   case class BoundaryNode(){
     var num, incoming, outgoing = 0
   }
@@ -434,16 +421,12 @@ object PalmTreeTest extends App{
     }
 
     def getFirstChild(): Vertex ={
-      if(firstchild == null){
-        return null
-      }else{
-        return firstchild
-      }
+      return firstchild
     }
 
     def addConnects(v: Vertex): Unit ={
-      if(!connects.contains(v))
-        connects += v
+      //      if(!connects.contains(v))
+      connects += v
     }
     def removeConnects(v: Vertex): Unit ={
       connects -= v
@@ -464,7 +447,7 @@ object PalmTreeTest extends App{
           }
         }
       }
-      adjList -= v
+      //      adjList -= v
     }
 
     def removeHigh(vn: Int): Unit ={
@@ -625,6 +608,7 @@ object PalmTreeTest extends App{
               ee = ((v, x), c)
               x.father = v.num
               newVirtualEdge(v, x, c)
+              println(s"type 2.1 ${v.name} -> ${x.name}")
               if(getEstackx() == v.num && getEstacky() == b.num){
                 eab = eStack.pop()
               }
@@ -658,12 +642,11 @@ object PalmTreeTest extends App{
               c.edges += newComponent(((ee._1._1, ee._1._2)))
               println("debug type2...4... " + ee._1._1.name + " -> " + ee._1._2.name)
               ee = ((v, b), c)
-              b.father = v.num
               newVirtualEdge(v, b, c)
             }
             eStack.push((ee._1._1, ee._1._2))
-            //            newVirtualEdge(ee._1._1, ee._1._2, ee._2)
             makeTreeEdge((v, b))
+            b.father = v.num
             println("type2 " + v.name + " -> " + b.name)
             wcopy = b
           }
@@ -691,17 +674,19 @@ object PalmTreeTest extends App{
             y = getEstacky()
           }
 
+          // v -> lowpt1 and lowpt1 -> v
           var lowpt1w = verticeslist.find(p => p.num == wcopy.lowpt1).get
-          var ee: VirtualEdge = ((lowpt1w, v),c)
-          newVirtualEdge(lowpt1w, v, c)
-          println("type1.0 " + lowpt1w.name + " -> " + v.name)
+          var ee: VirtualEdge = ((v, lowpt1w),c)
+          newVirtualEdge(v, lowpt1w, c)
+          println("type1.0 " + v.name + " -> " + lowpt1w.name)
 
-          if(x == lowpt1w.num && y == v.num){
+          if((x == lowpt1w.num && y == v.num)||(x == v.num && y == lowpt1w.num)){
             var c = new Component
             println("debug type1...2... " + getEstackxn() + " -> " + getEstackyn())
-            c.edges += newComponent(eStack.pop())
+            eStack.pop()
+            c.edges += newComponent((lowpt1w, v))
             println("debug type1...3... " + ee._1._1.name + " -> " + ee._1._2.name)
-            c.edges += newComponent((ee._1._1, ee._1._2))
+            c.edges += newComponent((lowpt1w, v))
             ee = ((lowpt1w, v), c)
             newVirtualEdge(lowpt1w, v, c)
             println("type1.1 " + lowpt1w.name + " -> " + v.name)
@@ -713,7 +698,7 @@ object PalmTreeTest extends App{
           }else{
             val c = new Component
             println("debug type1...4... " + lowpt1w.name + " -> " + v.name)
-            c.edges += ((ee._1._1, ee._1._2))
+            c.edges += newComponent((lowpt1w, v))
             c.edges += newComponent((lowpt1w, v))
             ee = ((lowpt1w, v), c)
             newVirtualEdge(lowpt1w, v, c)
@@ -732,10 +717,16 @@ object PalmTreeTest extends App{
           }
           tStack.pop()
         }
-        h = tStack.top._1
-        a = tStack.top._2
-        b = tStack.top._3
-        while (!tStack.top.equals(eos) && ((a.num != v.num) && (b.num != v.num) && (v.highv() > h))) {
+        if(tStack.isEmpty){
+          h = 0
+          a = new Vertex("")
+          b = new Vertex("")
+        }else{
+          h = tStack.top._1
+          a = tStack.top._2
+          b = tStack.top._3
+        }
+        while ((a.num != v.num) && (b.num != v.num) && (v.highv() > h) && tStack.nonEmpty) {
           tStack.pop()
           h = tStack.top._1
           a = tStack.top._2
@@ -764,7 +755,7 @@ object PalmTreeTest extends App{
         if(w.num == v.father){
           var c = new Component
           println("debug frond..." + e._1.name + " -> " + e._2.name)
-          c.edges += newComponent(e)
+          c.edges += newComponent((w, v))
           println("debug frond..." + w.name + " -> " + v.name)
           c.edges += newComponent((w, v))
           val ee: Edge = (w, v)
@@ -858,12 +849,12 @@ object PalmTreeTest extends App{
 
     //    v.deg += 1
     //    w.deg += 1
-    if(!v.connects.contains(w)){
-      v.addConnects(w)
-    }
-    if(!w.connects.contains(v)){
-      w.addConnects(v)
-    }
+    //    if(!v.connects.contains(w)){
+    v.addConnects(w)
+    //    }
+    //    if(!w.connects.contains(v)){
+    w.addConnects(v)
+    //    }
     if(!v.adjList.contains(w)) {
       var bn = 0
       if (w.num < v.num) {
@@ -926,49 +917,6 @@ object PalmTreeTest extends App{
     }
 
 
-    //    var vecmap : Map[(Int, Int, CompType), ListBuffer[Edge]] = Map()
-    //    for(i <- virtualEdgeList.indices){
-    //      val vi = virtualEdgeList(i)
-    //      for(e <- vi._3.edges){
-    //        if(vi._4.equals(Bond) || vi._4.equals(Polygon)){
-    //          if(vecmap.contains((e._1.num, e._2.num, vi._4))){
-    //            val nc = vecmap((e._1.num, e._2.num, vi._4)) ++ vi._3.edges
-    //            while(nc.contains(e)){
-    //              nc -= e
-    //            }
-    //            vecmap += (e._1.num, e._2.num, lastType) -> nc
-    //          }else{
-    //            vecmap += (e._1.num, e._2.num, vi._4) -> vi._3.edges
-    //          }
-    //        }else{
-    //          vecmap += (e._1.num, e._2.num, vi._4) -> vi._3.edges
-    //        }
-    //      }
-    //    }
-    //
-    //    for(e <- lastComponent.edges){
-    //      if(vecmap.contains((e._1.num, e._2.num, lastType))){
-    //        val nc = vecmap((e._1.num, e._2.num, lastType)) ++ lastComponent.edges
-    //        while(nc.contains(e)){
-    //          nc -= e
-    //        }
-    //        vecmap += (e._1.num, e._2.num, lastType) -> nc
-    //      }else{
-    //        vecmap += (e._1.num, e._2.num, lastType) -> lastComponent.edges
-    //      }
-    //    }
-
-    //    println("--------Tri Components----------")
-    //    for(k <- vecmap.keys){
-    //      println("tricomponets:")
-    //      println(k)
-    //      for(e <- vecmap(k)){
-    //        println(s"v: ${e._1.name} -> w: ${e._2.name}")
-    //      }
-    //      println("------------------------------------")
-    //    }
-    //    println("**********************************************")
-
     for(i <- virtualEdgeList.indices){
       val vi = virtualEdgeList(i)
       if(vi._3.edges.nonEmpty){
@@ -988,6 +936,7 @@ object PalmTreeTest extends App{
                 vi._3.edges -= e
               }
             }
+
           }
           triComponents += vi._3
         }else{
@@ -998,6 +947,9 @@ object PalmTreeTest extends App{
     triComponents += lastComponent
   }
 
+  def buildComponetsTree(): Unit ={
+
+  }
   /*
   * after bulid tricomponents
   */
@@ -1008,7 +960,7 @@ object PalmTreeTest extends App{
   var superroot = new Vertex("superroot")
   superroot.num = -1
 
-  createGraph
+  createGraph2
   search1(verticeslist.head, superroot)
   sort
   findStartPath(verticeslist.head)
